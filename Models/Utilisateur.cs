@@ -1,12 +1,11 @@
-﻿using EasyCars.Models.Enums;
+﻿using Microsoft.AspNetCore.Identity;
+using EasyCars.Models.Enums;
 
 namespace EasyCars.Models
 {
-    public class Utilisateur
+    public class Utilisateur : IdentityUser
     {
-        public int Id { get; set; }
         public string Nom { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
         public int PointsFidelite { get; set; } = 0;
         public NiveauMembre NiveauMembre { get; set; } = NiveauMembre.Bronze;
 

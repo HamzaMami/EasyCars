@@ -8,7 +8,7 @@
         public DateTime Date { get; set; } = DateTime.Now;
 
         // FKs (VoitureId OR AgenceId — one is optional)
-        public int UtilisateurId { get; set; }
+        public string UtilisateurId { get; set; } = string.Empty;
         public Utilisateur Utilisateur { get; set; } = null!;
 
         public int? VoitureId { get; set; }

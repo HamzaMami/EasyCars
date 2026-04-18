@@ -14,8 +14,7 @@ namespace EasyCars.Models
         // FKs
         public int VoitureId { get; set; }
         public Voiture Voiture { get; set; } = null!;
-
-        public int UtilisateurId { get; set; }
+        public string UtilisateurId { get; set; } = string.Empty;
         public Utilisateur Utilisateur { get; set; } = null!;
     }
 
