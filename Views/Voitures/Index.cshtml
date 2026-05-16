@@ -1,53 +1,64 @@
-﻿@model IEnumerable<EasyCars.Models.Voiture>
+@model IEnumerable<EasyCars.Models.Voiture>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Notre Flotte";
 }
 
-<h1>Index</h1>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-in">
+        <div>
+            <h1 class="fw-bold">Explorez notre flotte</h1>
+            <p class="text-muted">Des véhicules de prestige pour toutes vos occasions.</p>
+        </div>
+        @if (User.IsInRole("AgenceAdmin") || User.IsInRole("SuperAdmin"))
+        {
+            <a asp-action="Create" class="btn btn-premium">
+                <i class="bi bi-plus-lg"></i> Ajouter un véhicule
+            </a>
+        }
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Modele)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PrixParJour)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Statut)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Agence)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Modele)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PrixParJour)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Statut)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Agence.Nom)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="row g-4">
+        @foreach (var item in Model) {
+            <div class="col-md-6 col-lg-4 animate-fade-in">
+                <div class="card-premium h-100 d-flex flex-column">
+                    <div class="position-relative mb-3 rounded-3 overflow-hidden" style="height: 200px; background: #eee;">
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge @(item.Statut == EasyCars.Models.Enums.StatutVoiture.Disponible ? "bg-success" : "bg-warning") rounded-pill">
+                                @item.Statut
+                            </span>
+                        </div>
+                        <i class="bi bi-car-front position-absolute top-50 start-50 translate-middle fs-1 opacity-25"></i>
+                    </div>
+                    
+                    <h3 class="h4 fw-bold mb-2">@item.Modele</h3>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-geo-alt"></i> @item.Agence.Nom, @item.Agence.Ville
+                    </p>
+                    
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fs-4 fw-bold text-primary">@item.PrixParJour€</span>
+                            <span class="text-muted small">/ jour</span>
+                        </div>
+                        <div class="btn-group">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3">Détails</a>
+                            @if (User.Identity!.IsAuthenticated && item.Statut == EasyCars.Models.Enums.StatutVoiture.Disponible)
+                            {
+                                <a asp-controller="Reservations" asp-action="Create" asp-route-voitureId="@item.Id" class="btn btn-primary btn-sm rounded-pill px-3 ms-2">Réserver</a>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (User.IsInRole("AgenceAdmin") || User.IsInRole("SuperAdmin"))
+                    {
+                        <div class="mt-3 pt-3 border-top d-flex gap-2">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="text-muted small text-decoration-none">Modifier</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="text-danger small text-decoration-none">Supprimer</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

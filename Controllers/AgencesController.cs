@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,8 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using EasyCars.Data;
 using EasyCars.Models;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace EasyCars.Controllers
 {
+    [Authorize]
     public class AgencesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -44,6 +47,7 @@ namespace EasyCars.Controllers
         }
 
         // GET: Agences/Create
+        [Authorize(Roles = "SuperAdmin,AgenceAdmin")]
         public IActionResult Create()
         {
             return View();
@@ -54,6 +58,7 @@ namespace EasyCars.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "SuperAdmin,AgenceAdmin")]
         public async Task<IActionResult> Create([Bind("Id,Nom,Ville,Adresse,ChiffreAffairesTotal")] Agence agence)
         {
             if (ModelState.IsValid)
@@ -66,6 +71,7 @@ namespace EasyCars.Controllers
         }
 
         // GET: Agences/Edit/5
+        [Authorize(Roles = "SuperAdmin,AgenceAdmin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -86,6 +92,7 @@ namespace EasyCars.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "SuperAdmin,AgenceAdmin")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nom,Ville,Adresse,ChiffreAffairesTotal")] Agence agence)
         {
             if (id != agence.Id)
@@ -117,6 +124,7 @@ namespace EasyCars.Controllers
         }
 
         // GET: Agences/Delete/5
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -137,6 +145,7 @@ namespace EasyCars.Controllers
         // POST: Agences/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var agence = await _context.Agences.FindAsync(id);

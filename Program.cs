@@ -1,5 +1,7 @@
 using EasyCars.Data;
 using EasyCars.Models;
+using EasyCars.Hubs;
+using EasyCars.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +21,11 @@ builder.Services.AddIdentity<Utilisateur, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+
+// ── Background Worker: OnTemporel event ──────────────────
+builder.Services.AddHostedService<ReservationExpirationWorker>();
 
 var app = builder.Build();
 
@@ -36,19 +43,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+app.MapHub<NotificationHub>("/notificationHub");
 
-// ── Seed Roles ──────────────────────────────────────────
+// ── Seed: Roles + Users + Demo Data ──────────────────────
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider
-        .GetRequiredService<RoleManager<IdentityRole>>();
-
-    string[] roles = { "Client", "AgenceAdmin", "SuperAdmin" };
-    foreach (var role in roles)
-    {
-        if (!roleManager.RoleExistsAsync(role).Result)
-            roleManager.CreateAsync(new IdentityRole(role)).Wait();
-    }
+    await DbSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 app.Run();

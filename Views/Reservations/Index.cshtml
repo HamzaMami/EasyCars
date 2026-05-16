@@ -1,71 +1,101 @@
-﻿@model IEnumerable<EasyCars.Models.Reservation>
+@model IEnumerable<EasyCars.Models.Reservation>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Mes Réservations";
 }
 
-<h1>Index</h1>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-in">
+        <div>
+            <h1 class="fw-bold">Mes Réservations</h1>
+            <p class="text-muted">Gérez et suivez toutes vos locations en temps réel.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-premium">
+            <i class="bi bi-plus-lg"></i> Nouvelle réservation
+        </a>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.DateDebut)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateFin)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MontantTotal)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.RemiseAppliquee)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Statut)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Voiture)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Utilisateur)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateDebut)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateFin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MontantTotal)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.RemiseAppliquee)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Statut)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Voiture.Modele)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Utilisateur.Email)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x fs-1 text-muted mb-3 d-block"></i>
+            <h4 class="text-muted">Aucune réservation pour l'instant</h4>
+            <p class="text-muted mb-4">Explorez notre flotte et réservez votre prochaine aventure.</p>
+            <a asp-controller="Voitures" asp-action="Index" class="btn btn-premium px-5">Voir les voitures</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var item in Model) {
+                var badgeClass = item.Statut switch {
+                    EasyCars.Models.Enums.StatutReservation.Confirmee => "bg-success",
+                    EasyCars.Models.Enums.StatutReservation.Refusee   => "bg-danger",
+                    EasyCars.Models.Enums.StatutReservation.Terminee  => "bg-secondary",
+                    _                                                  => "bg-warning text-dark"
+                };
+                var days = (item.DateFin - item.DateDebut).Days;
+
+                <div class="col-md-6 col-lg-4 animate-fade-in">
+                    <div class="card-premium h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">@item.Voiture.Modele</h5>
+                                <small class="text-muted">Réservation #@item.Id</small>
+                            </div>
+                            <span class="badge @badgeClass rounded-pill px-3 py-2">@item.Statut</span>
+                        </div>
+
+                        <div class="d-flex gap-3 mb-4 text-muted small">
+                            <div>
+                                <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                @item.DateDebut.ToString("dd/MM/yyyy")
+                            </div>
+                            <span>→</span>
+                            <div>
+                                <i class="bi bi-calendar-check me-1 text-primary"></i>
+                                @item.DateFin.ToString("dd/MM/yyyy")
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-3 mb-4" style="background: var(--background);">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Durée</span>
+                                <span class="fw-bold">@days jour(s)</span>
+                            </div>
+                            @if (item.RemiseAppliquee > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Remise fidélité</span>
+                                    <span class="text-success fw-bold">-@item.RemiseAppliquee.ToString("C")</span>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                <span class="fw-bold">Total</span>
+                                <span class="fs-5 fw-bold text-primary">@item.MontantTotal.ToString("C")</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto d-flex gap-2 flex-wrap">
+                            <a asp-action="Details" asp-route-id="@item.Id"
+                               class="btn btn-outline-primary btn-sm rounded-pill px-3 flex-grow-1">
+                                <i class="bi bi-eye"></i> Détails
+                            </a>
+                            @if (User.IsInRole("AgenceAdmin") || User.IsInRole("SuperAdmin"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id"
+                                   class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid py-4" style="background: var(--background); min-height: 100vh;">
+    <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-in px-3">
+        <div>
+            <h1 class="fw-bold mb-1">Dashboard</h1>
+            <p class="text-muted">Tableau de bord – analyse et performance en temps réel</p>
+        </div>
+        <div class="text-muted small"><i class="bi bi-clock me-1"></i>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+
+    <!-- ── KPI Cards ──────────────────────────────────── -->
+    <div class="row g-4 mb-5 px-3">
+        <div class="col-6 col-lg-3">
+            <div class="card-premium text-center animate-fade-in">
+                <i class="bi bi-car-front fs-1 text-primary mb-2 d-block"></i>
+                <div class="fs-2 fw-bold">@ViewBag.TotalVoitures</div>
+                <div class="text-muted small">Véhicules total</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card-premium text-center animate-fade-in">
+                <i class="bi bi-key fs-1 text-success mb-2 d-block"></i>
+                <div class="fs-2 fw-bold">@ViewBag.VoitureDispo</div>
+                <div class="text-muted small">Disponibles</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card-premium text-center animate-fade-in">
+                <i class="bi bi-graph-up-arrow fs-1 text-warning mb-2 d-block"></i>
+                <div class="fs-2 fw-bold">@(Math.Round((double)ViewBag.TauxOccupation, 1))%</div>
+                <div class="text-muted small">Taux d'occupation</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card-premium text-center animate-fade-in">
+                <i class="bi bi-cash-stack fs-1 text-success mb-2 d-block"></i>
+                <div class="fs-2 fw-bold">@(((decimal)ViewBag.RevenuTotal).ToString("C0"))</div>
+                <div class="text-muted small">Revenu total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Charts Row ─────────────────────────────────── -->
+    <div class="row g-4 mb-5 px-3">
+        <div class="col-lg-8">
+            <div class="card-premium">
+                <h5 class="fw-bold mb-4"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Revenus mensuels @DateTime.Now.Year</h5>
+                <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card-premium">
+                <h5 class="fw-bold mb-4"><i class="bi bi-pie-chart me-2 text-primary"></i>Revenus par agence</h5>
+                <canvas id="agenceChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Ratings + Recent Reservations ─────────────── -->
+    <div class="row g-4 px-3">
+        <div class="col-lg-5">
+            <div class="card-premium">
+                <h5 class="fw-bold mb-4"><i class="bi bi-star me-2 text-warning"></i>Notes moyennes par agence</h5>
+                @{
+                    var ratingLabels = (string)ViewBag.RatingAgenceLabels;
+                    var ratingData   = (string)ViewBag.RatingAgenceData;
+                }
+                @if (ratingLabels == "[]")
+                {
+                    <p class="text-muted text-center py-4"><i class="bi bi-chat-left-dots fs-2 d-block mb-2"></i>Aucun avis soumis pour l'instant.</p>
+                }
+                else
+                {
+                    <canvas id="ratingChart" height="200"></canvas>
+                }
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card-premium">
+                <h5 class="fw-bold mb-4"><i class="bi bi-clock-history me-2 text-primary"></i>Réservations récentes</h5>
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th>#</th><th>Client</th><th>Voiture</th><th>Montant</th><th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in (List<EasyCars.Models.Reservation>)ViewBag.RecentReservations)
+                            {
+                                var badgeClass = r.Statut switch {
+                                    EasyCars.Models.Enums.StatutReservation.Confirmee => "bg-success",
+                                    EasyCars.Models.Enums.StatutReservation.Refusee   => "bg-danger",
+                                    EasyCars.Models.Enums.StatutReservation.Terminee  => "bg-secondary",
+                                    _ => "bg-warning text-dark"
+                                };
+                                <tr>
+                                    <td class="text-muted small">#@r.Id</td>
+                                    <td>
+                                        <div class="fw-bold small">@r.Utilisateur.Nom</div>
+                                        <div class="text-muted" style="font-size:.75rem;">@r.Utilisateur.Email</div>
+                                    </td>
+                                    <td class="small">@r.Voiture.Modele</td>
+                                    <td class="fw-bold text-primary small">@r.MontantTotal.ToString("C0")</td>
+                                    <td><span class="badge @badgeClass rounded-pill">@r.Statut</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <a asp-controller="Reservations" asp-action="Index" class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">
+                    Voir toutes <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const primary = '#2563eb';
+    const chartDefaults = { responsive: true, plugins: { legend: { display: false } } };
+
+    // Monthly Revenue Bar Chart
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(ViewBag.MonthLabels),
+            datasets: [{
+                label: 'Revenus (€)',
+                data: @Html.Raw(ViewBag.RevenueData),
+                backgroundColor: 'rgba(37,99,235,0.15)',
+                borderColor: primary,
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: { ...chartDefaults, plugins: { legend: { display: true, labels: { color: '#64748b' } } },
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(100,116,139,0.1)' }, ticks: { color: '#64748b' } },
+                      x: { grid: { display: false }, ticks: { color: '#64748b' } } }
+        }
+    });
+
+    // Agency Revenue Doughnut
+    new Chart(document.getElementById('agenceChart'), {
+        type: 'doughnut',
+        data: {
+            labels: @Html.Raw(ViewBag.AgenceLabels),
+            datasets: [{
+                data: @Html.Raw(ViewBag.AgenceRevenue),
+                backgroundColor: ['#2563eb','#3b82f6','#60a5fa','#93c5fd'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#64748b', boxWidth: 12, padding: 16 } } }, cutout: '65%' }
+    });
+
+    // Rating Chart
+    const ratingEl = document.getElementById('ratingChart');
+    if (ratingEl) {
+        new Chart(ratingEl, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(ViewBag.RatingAgenceLabels),
+                datasets: [{
+                    label: 'Note /5',
+                    data: @Html.Raw(ViewBag.RatingAgenceData),
+                    backgroundColor: 'rgba(245,158,11,0.2)',
+                    borderColor: '#f59e0b',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: { ...chartDefaults, indexAxis: 'y',
+                scales: { x: { min: 0, max: 5, grid: { color: 'rgba(100,116,139,0.1)' }, ticks: { color: '#64748b' } },
+                          y: { grid: { display: false }, ticks: { color: '#64748b' } } }
+            }
+        });
+    }
+</script>
+}

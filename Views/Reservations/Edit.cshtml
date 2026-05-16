@@ -1,62 +1,69 @@
-﻿@model EasyCars.Models.Reservation
+@model EasyCars.Models.Reservation
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Gérer la réservation";
 }
 
-<h1>Edit</h1>
+<div class="container py-5" style="max-width: 600px;">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-muted text-decoration-none small">
+            <i class="bi bi-arrow-left me-1"></i>Retour aux réservations
+        </a>
+    </div>
 
-<h4>Reservation</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="card-premium animate-fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Réservation #@Model.Id</h2>
+            <span class="badge bg-secondary rounded-pill">@Model.Statut</span>
+        </div>
+        
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 small"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="DateDebut" class="control-label"></label>
-                <input asp-for="DateDebut" class="form-control" />
-                <span asp-validation-for="DateDebut" class="text-danger"></span>
+            <input type="hidden" asp-for="VoitureId" />
+            <input type="hidden" asp-for="UtilisateurId" />
+            <input type="hidden" asp-for="DateDebut" />
+            <input type="hidden" asp-for="DateFin" />
+            <input type="hidden" asp-for="MontantTotal" />
+            <input type="hidden" asp-for="RemiseAppliquee" />
+
+            <div class="row mb-4">
+                <div class="col-6">
+                    <div class="text-muted small text-uppercase fw-bold">Début</div>
+                    <div class="fw-bold">@Model.DateDebut.ToString("dd/MM/yyyy")</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small text-uppercase fw-bold">Fin</div>
+                    <div class="fw-bold">@Model.DateFin.ToString("dd/MM/yyyy")</div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="DateFin" class="control-label"></label>
-                <input asp-for="DateFin" class="form-control" />
-                <span asp-validation-for="DateFin" class="text-danger"></span>
+
+            <div class="mb-4 p-3 rounded-3" style="background: rgba(37,99,235,0.05); border: 1px solid rgba(37,99,235,0.1);">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Montant</span>
+                    <span class="fw-bold">@Model.MontantTotal.ToString("C2")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-success"><i class="bi bi-tag-fill me-1"></i>Remise</span>
+                    <span class="text-success fw-bold">-@Model.RemiseAppliquee.ToString("C2")</span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="MontantTotal" class="control-label"></label>
-                <input asp-for="MontantTotal" class="form-control" />
-                <span asp-validation-for="MontantTotal" class="text-danger"></span>
+
+            <div class="mb-5">
+                <label asp-for="Statut" class="form-label fw-bold small text-uppercase text-muted">Changer le statut</label>
+                <select asp-for="Statut" class="form-select rounded-3 py-3 border-primary shadow-sm" asp-items="Html.GetEnumSelectList<EasyCars.Models.Enums.StatutReservation>()">
+                </select>
+                <span asp-validation-for="Statut" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="RemiseAppliquee" class="control-label"></label>
-                <input asp-for="RemiseAppliquee" class="form-control" />
-                <span asp-validation-for="RemiseAppliquee" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Statut" class="control-label"></label>
-                <select asp-for="Statut" class="form-control"></select>
-                <span asp-validation-for="Statut" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="VoitureId" class="control-label"></label>
-                <select asp-for="VoitureId" class="form-control" asp-items="ViewBag.VoitureId"></select>
-                <span asp-validation-for="VoitureId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UtilisateurId" class="control-label"></label>
-                <select asp-for="UtilisateurId" class="form-control" asp-items="ViewBag.UtilisateurId"></select>
-                <span asp-validation-for="UtilisateurId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+
+            <div class="d-flex justify-content-end gap-3">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4">Annuler</a>
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-check-lg me-2"></i>Mettre à jour
+                </button>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
